@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -238,3 +239,245 @@
 
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👩‍🍳 Cozinha — Confeitaria do Futuro</title>
+  <link rel="icon" type="image/png" href="logo.png" />
+  <style>
+    body {
+      background: radial-gradient(circle at center, #0a0013 0%, #020008 100%);
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding: 15px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      box-shadow: 0 0 25px rgba(183,0,255,0.3);
+    }
+
+    header img { width: 65px; filter: drop-shadow(0 0 12px #b700ff); }
+    h1 { font-size: 2rem; color: #fff; text-shadow: 0 0 12px #b700ff; }
+    .subtitle { color: #bbaaff; font-size: .9rem; }
+
+    main {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .pedidos {
+      width: 90%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .pedido {
+      background: rgba(255,255,255,0.05);
+      border-left: 5px solid #b700ff;
+      border-radius: 15px;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 0 18px rgba(183,0,255,0.25);
+    }
+
+    .pedido img {
+      width: 75px;
+      height: 75px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(183,0,255,0.4);
+      border: 2px solid rgba(183,0,255,0.5);
+      object-fit: cover;
+    }
+
+    .pedido h3 { margin: 0; font-size: 1.1rem; color: #fff; }
+    .pedido p { margin: 3px 0; color: #bbaaff; }
+
+    .status {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      border: none;
+      outline: none;
+      background: rgba(183,0,255,0.2);
+      color: white;
+    }
+
+    .botoes {
+      margin-top: 25px;
+      display: flex;
+      gap: 15px;
+    }
+
+    button {
+      background: linear-gradient(90deg, #b700ff, #00ffff);
+      border: none;
+      color: white;
+      padding: 12px 22px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(0,255,255,0.4);
+    }
+
+    footer {
+      margin: 20px 0;
+      text-align: center;
+      color: #bbaaff;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Logo Confeitaria">
+    <div>
+      <h1>👩‍🍳 Cozinha</h1>
+      <p class="subtitle">Controle e acompanhe os pedidos em tempo real</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="pedidos" id="listaPedidos"></div>
+
+    <div class="botoes">
+      <button id="btnProntos">Marcar todos como Pronto</button>
+      <button id="btnLimpar">Limpar todos os pedidos</button>
+    </div>
+  </main>
+
+  <footer>🍰 Confeitaria do Futuro — 2º ANO TAL | Mentalidade Empreendedora</footer>
+
+  <!-- Sons -->
+  <audio id="somNovo" src="notificacao.mp3" preload="auto"></audio>
+  <audio id="somPronto" src="pronto.mp3" preload="auto"></audio>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+    const socket = io();
+    const listaPedidos = document.getElementById("listaPedidos");
+    const btnProntos = document.getElementById("btnProntos");
+    const btnLimpar = document.getElementById("btnLimpar");
+    const somNovo = document.getElementById("somNovo");
+    const somPronto = document.getElementById("somPronto");
+
+    let pedidos = [];
+
+    function getImagem(item) {
+      if (item.includes("CASTANHA")) return "doce1.png";
+      if (item.includes("AMENDOIM")) return "doce2.png";
+      if (item.includes("GELEIA")) return "geleia-uva.png";
+      return "logo.png";
+    }
+
+    socket.on("orders:init", (data) => {
+      pedidos = data;
+      renderPedidos();
+    });
+
+    socket.on("orders:update", (data) => {
+      const novos = data.filter(p => !pedidos.find(x => x.id === p.id));
+      const prontos = data.filter(
+        p => p.status === "Pronto" &&
+        !pedidos.find(x => x.id === p.id && x.status === "Pronto")
+      );
+
+      if (novos.length > 0) somNovo.play();
+      if (prontos.length > 0) somPronto.play();
+
+      pedidos = data;
+      renderPedidos();
+    });
+
+    // Renderizar
+    function renderPedidos() {
+      listaPedidos.innerHTML = "";
+
+      if (pedidos.length === 0) {
+        listaPedidos.innerHTML = "<p>Nenhum pedido no momento.</p>";
+        return;
+      }
+
+      pedidos.slice().reverse().forEach(p => {
+        const div = document.createElement("div");
+        div.classList.add("pedido");
+        
+        div.innerHTML = `
+          <img src="${getImagem(p.item)}" alt="Doce">
+          
+          <div>
+            <h3>${p.item}</h3>
+            <p><strong>Cliente:</strong> ${p.name}</p>
+            <p><strong>Status:</strong> ${p.status}</p>
+          </div>
+
+          <div>
+            <select class="status" data-id="${p.id}">
+              <option ${p.status === "Aguardando" ? "selected" : ""}>Aguardando</option>
+              <option ${p.status === "Em produção" ? "selected" : ""}>Em produção</option>
+              <option ${p.status === "Pronto" ? "selected" : ""}>Pronto</option>
+            </select>
+          </div>
+        `;
+
+        listaPedidos.appendChild(div);
+      });
+
+      document.querySelectorAll(".status").forEach(sel => {
+        sel.addEventListener("change", e => {
+          socket.emit("order:update", {
+            id: e.target.dataset.id,
+            status: e.target.value
+          });
+        });
+      });
+    }
+
+    btnProntos.addEventListener("click", () => {
+      fetch("/api/orders")
+        .then(r => r.json())
+        .then(lista => {
+          lista.forEach(o =>
+            socket.emit("order:update", { id: o.id, status: "Pronto" })
+          );
+        });
+    });
+
+    btnLimpar.addEventListener("click", () => {
+      if (!confirm("Deseja limpar todos os pedidos?")) return;
+      fetch("/api/clear", { method: "POST" }).then(() => {
+        pedidos = [];
+        renderPedidos();
+      });
+    });
+  </script>
+
+</body>
+</html>
+>>>>>>> 186e8456d60e0c01038fef8810aaa38e55138c80
