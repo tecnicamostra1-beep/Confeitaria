@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📱 Confeitaria do Futuro — Acesse o Cardápio</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: radial-gradient(circle at center, #190020 0%, #0b0012 100%);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .logo {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 15px #b26eff);
+    }
+
+    .title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #d7b6ff;
+      text-shadow: 0 0 10px #b26eff;
+    }
+
+    .subtitle {
+      color: #aaa;
+      margin-bottom: 30px;
+      font-size: 1.1rem;
+    }
+
+    .qr-box {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(178, 110, 255, 0.3);
+      animation: glow 2s infinite alternate;
+    }
+
+    .qr-box img {
+      width: 260px;
+      height: 260px;
+      filter: drop-shadow(0 0 20px #b26eff);
+    }
+
+    .hint {
+      margin-top: 20px;
+      color: #cfaaff;
+      font-size: 1rem;
+      animation: fadeIn 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 15px rgba(178, 110, 255, 0.2); }
+      to { box-shadow: 0 0 35px rgba(178, 110, 255, 0.7); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0.6; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <img src="logo.png" alt="Logo Confeitaria do Futuro" class="logo">
+  <h1 class="title">🍰 Confeitaria do Futuro</h1>
+  <p class="subtitle">Mentalidade Empreendedora — 2º ANO TAL</p>
+
+  <div class="qr-box">
+    <img src="qrcode-cardapio.png" alt="QR Code do Cardápio">
+  </div>
+
+  <p class="hint">📲 Aponte a câmera do celular e acesse nosso cardápio digital</p>
+</body>
+</html>

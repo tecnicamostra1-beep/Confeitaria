@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📺 Painel de Pedidos — Confeitaria do Futuro</title>
+  <link rel="icon" type="image/png" href="logo.png" />
+  
+  <style>
+    body {
+      background: radial-gradient(circle at center, #0a0013 0%, #020008 100%);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      padding: 15px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      box-shadow: 0 0 25px rgba(183,0,255,0.3);
+    }
+
+    header img { width: 60px; filter: drop-shadow(0 0 10px #b700ff); }
+
+    h1 { font-size: 2rem; color: #fff; text-shadow: 0 0 12px #b700ff; }
+    .subtitle { color: #bbaaff; font-size: .9rem; }
+
+    h2 {
+      margin-top: 25px;
+      color: #b700ff;
+      text-shadow: 0 0 20px #b700ff;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+    }
+
+    /* GRID DE PEDIDOS */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin: 30px auto;
+      width: 90%;
+      max-width: 1200px;
+    }
+
+    /* CARD DE PEDIDO */
+    .pedido {
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 0 15px rgba(183,0,255,0.25);
+      transition: transform .3s, box-shadow .4s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      border-left: 5px solid #b700ff;
+    }
+
+    .pedido:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 25px rgba(183,0,255,0.5);
+    }
+
+    .pedido img {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 2px solid rgba(183,0,255,0.4);
+      box-shadow: 0 0 15px rgba(183,0,255,0.3);
+    }
+
+    .pedido h3 {
+      margin: 0;
+      color: #fff;
+      font-size: 1.3rem;
+      text-shadow: 0 0 10px #b700ff;
+    }
+
+    .pedido p {
+      margin: 4px 0;
+      color: #bbaaff;
+      font-size: 0.95rem;
+    }
+
+    /* CORES POR STATUS */
+    .aguardando { border-left-color: #ff00ff; }
+    .producao { border-left-color: #00ffff; }
+
+    .pronto {
+      border-left-color: #00ff88;
+      animation: brilho 1.5s infinite alternate ease-in-out;
+    }
+
+    @keyframes brilho {
+      from { box-shadow: 0 0 10px #00ff88; }
+      to { box-shadow: 0 0 30px #00ff88; }
+    }
+
+    footer {
+      font-size: 0.8rem;
+      color: #bbaaff;
+      margin: 30px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <img src="logo.png" alt="Logo Confeitaria">
+    <div>
+      <h1>📺 Painel de Pedidos</h1>
+      <p class="subtitle">Acompanhe o andamento em tempo real</p>
+    </div>
+  </header>
+
+  <h2>Pedidos em Tempo Real</h2>
+
+  <div class="grid" id="pedidos"></div>
+
+  <footer>
+    🧁 Confeitaria do Futuro — Mentalidade Empreendedora | 2º ANO TAL
+  </footer>
+
+  <audio id="soundReady" src="pronto.mp3" preload="auto"></audio>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+    const socket = io();
+    const pedidosEl = document.getElementById("pedidos");
+    const soundReady = document.getElementById("soundReady");
+
+    let pedidos = [];
+
+    /* IMAGENS AUTOMÁTICAS */
+    function getImagem(item) {
+      if (item.includes("CASTANHA")) return "doce1.png";
+      if (item.includes("AMENDOIM")) return "doce2.png";
+      if (item.includes("GELEIA")) return "geleia-uva.png";
+      return "logo.png";
+    }
+
+    /* LISTA INICIAL */
+    socket.on("orders:init", data => {
+      pedidos = data;
+      render();
+    });
+
+    /* ATUALIZAÇÕES */
+    socket.on("orders:update", data => {
+      const novosProntos = data.filter(p =>
+        p.status === "Pronto" &&
+        !pedidos.find(x => x.id === p.id && x.status === "Pronto")
+      );
+
+      pedidos = data;
+      render();
+
+      if (novosProntos.length > 0) soundReady.play();
+    });
+
+    /* RENDERIZAÇÃO */
+    function render() {
+      pedidosEl.innerHTML = "";
+
+      if (pedidos.length === 0) {
+        pedidosEl.innerHTML = "<p>Nenhum pedido no momento.</p>";
+        return;
+      }
+
+      pedidos.slice().reverse().forEach(p => {
+        const card = document.createElement("div");
+        card.classList.add("pedido");
+
+        if (p.status === "Aguardando") card.classList.add("aguardando");
+        else if (p.status === "Em produção") card.classList.add("producao");
+        else if (p.status === "Pronto") card.classList.add("pronto");
+
+        card.innerHTML = `
+          <img src="${getImagem(p.item)}" alt="">
+          <h3>${p.item}</h3>
+          <p><strong>Cliente:</strong> ${p.name}</p>
+          <p><strong>Status:</strong> ${p.status}</p>
+        `;
+
+        pedidosEl.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
